@@ -1,7 +1,8 @@
 package org.elcheapo
 import java.io.File
 import java.io.InputStream
-
+import com.github.ajalt.clikt.core.*
+import com.github.ajalt.clikt.parameters.options.*
 
 data class t (val name: String, val bytes: Int)
 
@@ -29,96 +30,100 @@ val rakenne =arrayOf(
     t("Suurin/Kiinteistön jakokirjain 2", 1),           // 20
     t("Kunnan koodi", 3),                               // 21
     t("Kunnan nimi suomeksi", 20),                      // 22
-    t("Kunnan nimi ruotsiksi", 20)                      // 23
+    t("Kunnan nimi ruotsiksi", 20),                     // 23
+    t("rivinvaihto", 1)                                 // 24
 )
 
-val katunumeroRegex = "\\D".toRegex()
+class bafReader : CliktCommand() {
 
-fun printUsage() {
-    println("Käyttö: bafreader <tiedosto> <kunta> <katu> <numero>")
-}
+    val tiedosto by option(help="BAF file name")
+    val kunta  by option(help="Kuntakoodi esim 091")
+    val katu  by option(help="Kadun nimi suomeksi tai ruotsiksi")
+    val numero by option(help="Numero kadulla")
+    var tyyppi:String = ""
+    var nro:Int = 0
 
-fun main(args: Array<String>) {
+    override fun run() {
 
-    val parser = ArgParser("example")
+        // Split possible multipart number
+        var match:String = (Regex("\\D").split(numero.toString())[0])
+        if(match == "") {
+            println("Anna osoite")
+            echoFormattedHelp()
+            return
+        }
+        nro = match.toInt()
+        if(nro < 1) {
+            println("Anna osoite")
+            echoFormattedHelp()
+            return
+        }
 
+        // Open BAF file
+        var inputStream: InputStream
+        try {
+            inputStream = File (tiedosto).inputStream()
+        } catch (e : Exception) {
+            println("Tiedosto ei aukea: " + tiedosto )
+            echoFormattedHelp()
+            return
+        }
 
-    if(args.size < 4 ) {
+        // Even or odd side of the street
+        if(nro % 2 == 1) {
+            tyyppi = "1"
+        } else {
+            tyyppi = "2"
+        }
 
-        printUsage()
-        return
+        if(parseRows(inputStream) == false) {
+            println("Osoite ei tunnettu")
+            echoFormattedHelp()
+            return
+        }
     }
-    var match:String = (katunumeroRegex.split(args[3]))[0]
-    if(match == "") {
-        printUsage()
-        return       
-    }
 
-    var numero:Int = match.toInt()
-
-    //println("Reading:" + args[0])
-    val kunta:String = args[1]
-    val katu:String = args[2]
-    val alkupNum:String = args[3]
-    var inputStream: InputStream
-    try {
-        inputStream = File (args[0]).inputStream()
-    } catch (e : Exception) {
-        println("Tiedosto ei aukea: " + args[0] )
-        printUsage()
-        return       
+    fun parseRows(inputStream: InputStream): Boolean {
         
-    }
-
+        while (inputStream.available() > 0) {
+            val rivi = HashMap<String, String> ()
+            for(b in rakenne) {
+                val (title, bytes) = b
+                rivi[title] = inputStream.readNBytes(bytes).toString(Charsets.ISO_8859_1).trim()
+            }
     
-
-    // Parillinen vari pariton talo
-    var tyyppi:String
-    if(numero % 2 == 1) {
-        tyyppi = "1"
-    } else {
-        tyyppi = "2"
-    }
-
-    while (inputStream.available() > 0) {
-        val rivi = HashMap<String, String> ()
-        for(b in rakenne) {
-            val (title, bytes) = b
-            rivi[title] = inputStream.readNBytes(bytes).toString(Charsets.ISO_8859_1).trim()
-        }
-        inputStream.readNBytes(1) // Skippaa rivinvaihto
-
-
-        if(     rivi["Kunnan koodi"] == kunta
-            && (rivi["Kadun (paikan) nimi suomeksi"]    == katu || rivi["Kadun (paikan) nimi ruotsiksi"] == katu)
-            &&  rivi["Kiinteistön tyyppi"] == tyyppi){
-
-            val pienin: Int = (rivi["Pienin/Kiinteistönumero 1"] ?: "0").toInt()
-            var suurin: Int
-
-            // Onko suurin numero tyyliin 34-36
-            if( (rivi["Suurin/Kiinteistönumero 2"] ?: "") == "") {
-                suurin = (rivi["Suurin/Kiinteistönumero 1"] ?: "0").toInt()
-            } else {
-                suurin = (rivi["Suurin/Kiinteistönumero 2"] ?: "0").toInt()
-            }
-
-            if(numero >= pienin && numero <= suurin) {
-                println(
-                    katu + " " + alkupNum
-                            + ";"+ alkupNum
-                            + ";" + rivi["Kadun (paikan) nimi suomeksi"]
-                            + ";" + rivi["Kadun (paikan) nimi ruotsiksi"]
-                            + ";" + rivi["Postinumero"]
-                            + ";" + numero
-                            + ";>=" + pienin
-                            + ";<=" + suurin
-                            + ";" + rivi["Ajopäivä"])
-                return
+            // Oikea katu ja oikea puol?
+            if(     rivi["Kunnan koodi"] == kunta
+                && (rivi["Kadun (paikan) nimi suomeksi"]    == katu || rivi["Kadun (paikan) nimi ruotsiksi"] == katu)
+                &&  rivi["Kiinteistön tyyppi"] == tyyppi){
+    
+                val pienin: Int = (rivi["Pienin/Kiinteistönumero 1"] ?: "0").toInt()
+                var suurin: Int
+    
+                // Onko suurin numero kaksiosainen, tyyliin 34-36
+                if( (rivi["Suurin/Kiinteistönumero 2"] ?: "") == "") {
+                    suurin = (rivi["Suurin/Kiinteistönumero 1"] ?: "0").toInt()
+                } else {
+                    suurin = (rivi["Suurin/Kiinteistönumero 2"] ?: "0").toInt()
+                }
+    
+                // Oikea numero?
+                if(nro >= pienin && nro <= suurin) {
+                    println(
+                        katu + " " + numero
+                                + ";"+ numero
+                                + ";" + rivi["Kadun (paikan) nimi suomeksi"]
+                                + ";" + rivi["Kadun (paikan) nimi ruotsiksi"]
+                                + ";" + rivi["Postinumero"]
+                                + ";" + nro
+                                + ";>=" + pienin
+                                + ";<=" + suurin
+                                + ";" + rivi["Ajopäivä"])
+                    return true
+                }
             }
         }
+        return false
     }
-    println("Ei löydy")
-    printUsage()
 }
-
+fun main(args: Array<String>) = bafReader().main(args)
