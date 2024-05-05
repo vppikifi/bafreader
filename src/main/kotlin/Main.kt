@@ -70,8 +70,6 @@ class bafReader : CliktCommand(
     // Main, tarkista parametrit
     override fun run() {
 
-        val versionName = project.properties["versionName"] as String
-
         if(tulostaVersio) {
             println("bafreader " + version)
             return 
