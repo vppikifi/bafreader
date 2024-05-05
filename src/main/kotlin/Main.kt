@@ -3,6 +3,8 @@ import java.io.File
 import java.io.InputStream
 import com.github.ajalt.clikt.core.*
 import com.github.ajalt.clikt.parameters.options.*
+import java.io.BufferedInputStream
+
 
 data class t (val name: String, val bytes: Int)
 
@@ -34,40 +36,69 @@ val rakenne =arrayOf(
     t("rivinvaihto", 1)                                 // 24
 )
 
-class bafReader : CliktCommand() {
+val version:String = "0.1"
 
-    val tiedosto by option(help="BAF file name")
-    val kunta  by option(help="Kuntakoodi esim 091")
-    val katu  by option(help="Kadun nimi suomeksi tai ruotsiksi")
-    val numero by option(help="Numero kadulla")
+class bafReader : CliktCommand(
+
+
+
+    "Postin BAF_VVVVKKPP.dat tiedoston lukija " + version) {
+
+    val tiedosto    by option("-f",  "--tiedosto",  help = "BAF tiedosto")
+    val kunta       by option("-c",  "--kunta",     help = "Kuntakoodi esim 091")
+    val katu        by option("-s",  "--katu",      help = "Kadun nimi suomeksi tai ruotsiksi")
+    val numero      by option("-n",  "--numero",    help = "Numero kadulla")
+    val hiljainen   by option("-q",  "--hiljaa",    help = "Ei tulostusta").flag(default=false)
+    val tulostaVersio by option("--versio",        help = "Tulosta versionumero ja lopeta").flag(default=false)
+    val debug       by option("-v",  "--debug",     help = "Tulosta debug").flag(default=false)
+    val moreDebug   by option("-vv", "--moredebug",  help = "Tulosta paljon debuggia").flag(default=false)
     var tyyppi:String = ""
     var nro:Int = 0
 
+    // Debug tulostus
+    fun debugPrint(msg : String, more : Boolean) {
+        // -vv
+        if(more) {
+            if(moreDebug) {
+                println(msg)
+            }
+        } else if(moreDebug || debug) {
+                println(msg)
+        }
+    }
+
+    // Main, tarkista parametrit
     override fun run() {
 
-        // Split possible multipart number
+        val versionName = project.properties["versionName"] as String
+
+        if(tulostaVersio) {
+            println("bafreader " + version)
+            return 
+        }
+
+        // Get first part of possible multipart number
         var match:String = (Regex("\\D").split(numero.toString())[0])
-        if(match == "") {
-            println("Anna osoite")
-            echoFormattedHelp()
+        if(match == "" || match.toInt() <1) {
+            if(!hiljainen) {
+                echoFormattedHelp()
+            }
             return
         }
         nro = match.toInt()
-        if(nro < 1) {
-            println("Anna osoite")
-            echoFormattedHelp()
-            return
-        }
 
         // Open BAF file
-        var inputStream: InputStream
+        var inputStream: BufferedInputStream
         try {
-            inputStream = File (tiedosto).inputStream()
+            inputStream = BufferedInputStream(File (tiedosto).inputStream())
         } catch (e : Exception) {
-            println("Tiedosto ei aukea: " + tiedosto )
-            echoFormattedHelp()
+            if(!hiljainen) {
+                println("Tiedosto ei aukea: " + tiedosto )
+                echoFormattedHelp()
+            }
             return
         }
+        debugPrint(tiedosto + " sisältää " + inputStream.available() + " tavua",false)
 
         // Even or odd side of the street
         if(nro % 2 == 1) {
@@ -75,22 +106,30 @@ class bafReader : CliktCommand() {
         } else {
             tyyppi = "2"
         }
+        debugPrint("tyyppi=" + tyyppi, false)
 
         if(parseRows(inputStream) == false) {
-            println("Osoite ei tunnettu")
-            echoFormattedHelp()
+            if(!hiljainen) {
+                println("Osoite ei tunnettu")
+                echoFormattedHelp()
+            }
             return
         }
     }
 
+    // Varsinainen parseri
     fun parseRows(inputStream: InputStream): Boolean {
         
         while (inputStream.available() > 0) {
+
+            // Lue dat tiedoston rivi speksin mukaan sisän hashiin
             val rivi = HashMap<String, String> ()
             for(b in rakenne) {
                 val (title, bytes) = b
                 rivi[title] = inputStream.readNBytes(bytes).toString(Charsets.ISO_8859_1).trim()
             }
+            debugPrint( "- " + rivi["Kunnan koodi"] + " - " + rivi["Kadun (paikan) nimi suomeksi"] + " - " + rivi["Kadun (paikan) nimi ruotsiksi"] + " - "
+                    + rivi["Kiinteistön tyyppi"] + " - " + rivi["Pienin/Kiinteistönumero 1"] + rivi["Suurin/Kiinteistönumero 1"], true)
     
             // Oikea katu ja oikea puol?
             if(     rivi["Kunnan koodi"] == kunta
@@ -99,13 +138,15 @@ class bafReader : CliktCommand() {
     
                 val pienin: Int = (rivi["Pienin/Kiinteistönumero 1"] ?: "0").toInt()
                 var suurin: Int
-    
+
+
                 // Onko suurin numero kaksiosainen, tyyliin 34-36
                 if( (rivi["Suurin/Kiinteistönumero 2"] ?: "") == "") {
                     suurin = (rivi["Suurin/Kiinteistönumero 1"] ?: "0").toInt()
                 } else {
                     suurin = (rivi["Suurin/Kiinteistönumero 2"] ?: "0").toInt()
                 }
+                debugPrint(rivi["Kadun (paikan) nimi suomeksi"] + " " + pienin + "<=" + nro + "<=" + suurin, false)
     
                 // Oikea numero?
                 if(nro >= pienin && nro <= suurin) {
