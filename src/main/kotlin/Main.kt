@@ -73,7 +73,7 @@ class bafReader : CliktCommand("Postin BAF_VVVVKKPP.dat tiedoston lukija " + ver
             }
 
             // Parsi osoite
-            var match = Regex("(\\w+) (\\d+)").find(osoite.toString())!!
+            var match = Regex("(\\D+) (\\d+)").find(osoite.toString())!!
                 val(k, numero) = match.destructured
             katu = k
         
