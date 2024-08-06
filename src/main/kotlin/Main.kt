@@ -5,6 +5,7 @@ import java.io.InputStream
 import com.github.ajalt.clikt.core.*
 import com.github.ajalt.clikt.parameters.options.*
 import java.io.BufferedInputStream
+import kotlin.text.toUpperCase
 
 data class Field(val name: String, val bytes: Int)
 
@@ -79,7 +80,7 @@ class bafReader : CliktCommand("Postin BAF_VVVVKKPP.dat tiedoston lukija " + VER
                 nro     = (matchResult.groupValues[2]).toInt()
                 rappu   = matchResult.groupValues[3] 
             } else {
-                println ("Huono osoite")
+                System.err.println (osoite.toString() + "; Huono osoite")
                 return 
             }
          
@@ -100,13 +101,14 @@ class bafReader : CliktCommand("Postin BAF_VVVVKKPP.dat tiedoston lukija " + VER
             // Etsi osoite
             if(parseRows(inputStream) == false) {
                 if(!hiljainen) {
-                    println("Osoite ei tunnettu")
-                    echoFormattedHelp()
+                    System.err.println(osoite.toString() + "; Osoite ei tunnettu")
+                    //echoFormattedHelp()
                 }
             }
         } catch (e : Exception) {
             if(!hiljainen) {
-                echoFormattedHelp()
+                System.err.println (osoite.toString() + "; Huono osoite")
+                //echoFormattedHelp()
             }
         }
     }
@@ -123,10 +125,14 @@ class bafReader : CliktCommand("Postin BAF_VVVVKKPP.dat tiedoston lukija " + VER
                     "${row["Kiinteistön tyyppi"]} - ${row["Pienin/Kiinteistönumero 1"]} ${row["Suurin/Kiinteistönumero 1"]} vs $nro",
             true
         )
-
+       
         if (
             row["Kunnan koodi"] == kunta &&
-            (row["Kadun (paikan) nimi suomeksi"] == katu || row["Kadun (paikan) nimi ruotsiksi"] == katu) &&
+            (row["Kadun (paikan) nimi suomeksi"] == katu 
+                || row["Kadun (paikan) nimi ruotsiksi"] == katu
+                || (row["Kadun (paikan) nimi suomeksi"] ?: "").uppercase() == katu.uppercase()
+                || (row["Kadun (paikan) nimi ruotsiksi"] ?: "").uppercase() == katu.uppercase()
+            ) &&
             row["Kiinteistön tyyppi"] == tyyppi
         ) {
             val minNumber = (row["Pienin/Kiinteistönumero 1"] ?: "0").toInt()
