@@ -5,6 +5,7 @@ import java.io.InputStream
 import com.github.ajalt.clikt.core.*
 import com.github.ajalt.clikt.parameters.options.*
 import java.io.BufferedInputStream
+import java.io.BufferedReader
 import kotlin.text.toUpperCase
 
 data class Field(val name: String, val bytes: Int)
@@ -37,12 +38,14 @@ val FIELDS = arrayOf(
     Field("rivinvaihto", 1)                                 // 24
 )
 
+data class Query(val osoite:String, val katu:String, val nro: Int, val rappu:String, val tyyppi:String, var loyty:Boolean)
+
 val VERSION: String = "0.2"
 
 class bafReader : CliktCommand("Postin BAF_VVVVKKPP.dat tiedoston lukija " + VERSION) {
-    val tiedosto    by option("-f",  "--tiedosto",  help = "BAF tiedosto")
+    val bafTiedosto    by option("-b",  "--baf",  help = "BAF tiedosto")
+    val osoiteTiedosto  by option("-i",  "--input",  help = "Kyselyt")
     val kunta       by option("-c",  "--kunta",     help = "Kuntakoodi esim 091").default("091")
-    val osoite      by option("-a",  "--osoite",    help = "Osoite <katu> <numero> <rappu>")
     val hiljainen   by option("-q",  "--hiljaa",    help = "Ei tulostusta").flag(default=false)
     val tulostaVersio by option("--versio",        help = "Tulosta versionumero ja lopeta").flag(default=false)
     val debug       by option("-v",  "--debug",     help = "Tulosta debug").flag(default=false)
@@ -51,6 +54,7 @@ class bafReader : CliktCommand("Postin BAF_VVVVKKPP.dat tiedoston lukija " + VER
     var nro:Int = 0
     var katu:String = ""
     var rappu:String = ""
+    var quaries: MutableList<Query> = mutableListOf<Query>()
 
     // Debug tulostus
     fun debugPrint(msg : String, more : Boolean) {
@@ -66,110 +70,149 @@ class bafReader : CliktCommand("Postin BAF_VVVVKKPP.dat tiedoston lukija " + VER
     // Main, tarkista parametrit
     override fun run() {
 
-        debugPrint("Start:"+osoite.toString(), true)
         if(tulostaVersio) {
             println ("Version:" + VERSION)
             return 
         }
+
+        readQueryFile(osoiteTiedosto ?: "")
+       
+
         try {
-            // katu ja numero erilleen
-            val addressRegex = Regex( "(\\D+)\\s*(\\d+)(?:-\\d+)?\\s*(\\D*)")
-            val matchResult = addressRegex.matchEntire(osoite.toString())
-            if( matchResult != null) {
-                katu    = (matchResult.groupValues[1]).trim()
-                nro     = (matchResult.groupValues[2]).toInt()
-                rappu   = matchResult.groupValues[3] 
-            } else {
-                System.err.println (osoite.toString() + "; Huono osoite")
-                return 
-            }
-         
-            // Kunpi puoli kadusta?
-            if(nro % 2 == 1) {
-                tyyppi = "1"
-            } else {
-                tyyppi = "2"
-            }
-            debugPrint("Katu:" + katu + " Numero:" + nro+ " rappu:" + rappu +  " kunta:" + kunta + " tyyppi:" + tyyppi, false)
 
             // Avaa BAF - tiedosto
-            debugPrint("Avataan :" + tiedosto.toString(), true)
+            debugPrint("Avataan :" + bafTiedosto.toString(), true)
             var inputStream: BufferedInputStream
-            inputStream = BufferedInputStream(File (tiedosto).inputStream())
-            debugPrint(tiedosto + " sisältää " + inputStream.available() + " tavua",false)
+            inputStream = BufferedInputStream(File (bafTiedosto).inputStream())
+            debugPrint(bafTiedosto + " sisältää " + inputStream.available() + " tavua",false)
 
-            // Etsi osoite
-            if(parseRows(inputStream) == false) {
-                if(!hiljainen) {
-                    System.err.println(osoite.toString() + "; Osoite ei tunnettu")
-                    //echoFormattedHelp()
+            // Etsi osoitteet
+            parseRows(inputStream)
+            val notFound = quaries.listIterator()
+
+            // Tulosta osoitteet, joita ei löytynyt
+            for(n in notFound) {
+                if(n.loyty == false) {
+                    System.err.println(n.osoite.toString() + "; Osoite ei tunnettu")
                 }
             }
+
         } catch (e : Exception) {
-            if(!hiljainen) {
-                System.err.println (osoite.toString() + "; Huono osoite")
-                //echoFormattedHelp()
+            System.err.println ("Error")
+        }
+    }
+
+    fun readQueryFile(qf: String) {
+        var reader: BufferedReader
+        reader = BufferedReader(File (qf).inputStream().reader())
+        try {
+            var line = reader.readLine()
+            while (line != null) {
+                val addressRegex = Regex( "(\\D+)\\s*(\\d+)(?:-\\d+)?\\s*(\\D*)")
+                val matchResult = addressRegex.matchEntire(line.toString())
+                if( matchResult != null) {
+
+                    val i: Int = (matchResult.groupValues[2]).toInt()
+                    var t: String
+                    if(i % 2 == 1) {
+                        t = "1"
+                    } else {
+                        t = "2"
+                    }
+
+                    var q: Query = Query(line,(matchResult.groupValues[1]).trim(), i, (matchResult.groupValues[3]), t, false)                    
+                    quaries.add(q)
+                } else {
+                    System.err.println (line.toString() + "; Huono osoite")
+                }
+                line = reader.readLine()                    
             }
+        } finally {
+           reader.close()
         }
     }
 
     // Varsinainen parseri
-    fun parseRows(inputStream: InputStream): Boolean {
-    while (inputStream.available() > 0) {
-        val row = HashMap<String, String>()
-        for ((title, bytes) in FIELDS) {
-            row[title] = inputStream.readNBytes(bytes).toString(Charsets.ISO_8859_1).trim()
-        }
-        debugPrint(
-            "- ${row["Kunnan koodi"]} vs $kunta - ${row["Kadun (paikan) nimi suomeksi"]} | ${row["Kadun (paikan) nimi ruotsiksi"]} vs $katu - " +
-                    "${row["Kiinteistön tyyppi"]} - ${row["Pienin/Kiinteistönumero 1"]} ${row["Suurin/Kiinteistönumero 1"]} vs $nro",
-            true
-        )
-       
-        if (
-            row["Kunnan koodi"] == kunta &&
-            (row["Kadun (paikan) nimi suomeksi"] == katu 
-                || row["Kadun (paikan) nimi ruotsiksi"] == katu
-                || (row["Kadun (paikan) nimi suomeksi"] ?: "").uppercase() == katu.uppercase()
-                || (row["Kadun (paikan) nimi ruotsiksi"] ?: "").uppercase() == katu.uppercase()
-            ) &&
-            row["Kiinteistön tyyppi"] == tyyppi
-        ) {
-            val minNumber = (row["Pienin/Kiinteistönumero 1"] ?: "0").toInt()
-            var maxNumber = Int.MAX_VALUE
-
-            if ((row["Suurin/Kiinteistönumero 2"] ?: "") == "") {
-                if ((row["Suurin/Kiinteistönumero 1"] ?: "") != "") {
-                    maxNumber = (row["Suurin/Kiinteistönumero 1"] ?: "0").toInt()
-                }
-            } else {
-                maxNumber = (row["Suurin/Kiinteistönumero 2"] ?: "0").toInt()
+    fun parseRows(inputStream: InputStream) {
+        
+        while (inputStream.available() > 0) {
+            val row = HashMap<String, String>()
+            for ((title, bytes) in FIELDS) {
+                row[title] = inputStream.readNBytes(bytes).toString(Charsets.ISO_8859_1).trim()
             }
             debugPrint(
-                "${row["Kadun (paikan) nimi suomeksi"]} $minNumber<=$nro<=$maxNumber postinro:${row["Postinumero"]}",
-                false
-            )
+                "- ${row["Kunnan koodi"]} vs $kunta - ${row["Kadun (paikan) nimi suomeksi"]} | ${row["Kadun (paikan) nimi ruotsiksi"]} vs $katu - " +
+                    "${row["Kiinteistön tyyppi"]} - ${row["Pienin/Kiinteistönumero 1"]} ${row["Suurin/Kiinteistönumero 1"]} vs $nro",
+                    true)
 
-            if (nro in minNumber..maxNumber) {
-                println(
-                    "$osoite;" +
+            // Oikea kunta?
+            if(row["Kunnan koodi"] != kunta) {
+                continue
+            }
+
+            // Käy läpi kaikki kyselyt
+            val qit = quaries.listIterator()
+            var loytymatta : Boolean = false
+            for(q in qit) {
+
+                // Onko kaikki jo löydetty?
+                if(q.loyty == false) {
+                    loytymatta = true
+                }
+                // Oikealla puolell katua + oikea katu?
+                if(q.loyty == false 
+                &&  (
+                    q.katu.uppercase() == (row["Kadun (paikan) nimi suomeksi"] ?: "").uppercase()
+                    || q.katu.uppercase() == (row["Kadun (paikan) nimi ruotsiksi"] ?: "").uppercase()
+                    ) 
+                && q.tyyppi == row["Kiinteistön tyyppi"]){
+                    
+                    // BAF tietueen pinenin osoite
+                    val minNumber = (row["Pienin/Kiinteistönumero 1"] ?: "0").toInt()
+
+                    // Selvitä BAF tietueen suurin osoite
+                    var maxNumber = Int.MAX_VALUE
+                    if ((row["Suurin/Kiinteistönumero 2"] ?: "") == "") {
+                        if ((row["Suurin/Kiinteistönumero 1"] ?: "") != "") {
+                            maxNumber = (row["Suurin/Kiinteistönumero 1"] ?: "0").toInt()
+                        }
+                    } else {
+                        maxNumber = (row["Suurin/Kiinteistönumero 2"] ?: "0").toInt()
+                    }
+                    debugPrint(
+                        "${row["Kadun (paikan) nimi suomeksi"]} $minNumber<=$nro<=$maxNumber postinro:${row["Postinumero"]}",
+                        false
+                    )
+
+                    // Osuuko numero?
+                    if (q.nro in minNumber..maxNumber) {
+
+                        println(
+                            "${q.osoite};" +
                             "${row["Kadun (paikan) nimi suomeksi"]};" +
                             "${row["Kadun (paikan) nimi ruotsiksi"]};" +
                             "${row["Postinumero"]};" +
-                            "$nro;" +
-                            "$rappu;" +
-                            "${row["Kadun (paikan) nimi suomeksi"]} $nro$rappu;" +
-                            "${row["Kadun (paikan) nimi ruotsiksi"]} $nro$rappu;" +
+                            "${q.nro};" +
+                            "${q.rappu};" +
+                            "${row["Kadun (paikan) nimi suomeksi"]} ${q.nro}${q.rappu};" +
+                            "${row["Kadun (paikan) nimi ruotsiksi"]} ${q.nro}${q.rappu};" +
                             ">=$minNumber;" +
                             "<=$maxNumber;" +
-                            "${row["Ajopäivä"]}"
-                )
-                return true
+                            "${(row["Ajopäivä"] ?: "").substring(0,4)}" +
+                            "-" + "${(row["Ajopäivä"] ?: "").substring(4,6)}" 
+                            + "-" + "${(row["Ajopäivä"] ?: "").substring(6,8)}"
+                        )
+                        q.loyty = true
+                    } 
+        
+                }
+            }
+            if(loytymatta == false) {
+                // Ei enää etsittävää
+                return;
             }
         }
     }
-    return false
 }
 
-}
 fun main(args: Array<String>) = bafReader().main(args)
