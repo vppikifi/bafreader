@@ -43,17 +43,18 @@ data class Query(val osoite:String, val katu:String, val nro: Int, val rappu:Str
 val VERSION: String = "0.2"
 
 class bafReader : CliktCommand("Postin BAF_VVVVKKPP.dat tiedoston lukija " + VERSION) {
+
+    // CliktCommand optiot
     val bafTiedosto    by option("-b",  "--baf",  help = "BAF tiedosto")
     val osoiteTiedosto  by option("-i",  "--input",  help = "Kyselyt")
     val kunta       by option("-c",  "--kunta",     help = "Kuntakoodi esim 091").default("091")
     val hiljainen   by option("-q",  "--hiljaa",    help = "Ei tulostusta").flag(default=false)
     val tulostaVersio by option("--versio",        help = "Tulosta versionumero ja lopeta").flag(default=false)
     val debug       by option("-v",  "--debug",     help = "Tulosta debug").flag(default=false)
+    val eiHeaderia  by option("-h",  "--ei-header",     help = "Tulosta debug").flag(default=false)
     val moreDebug   by option("-vv", "--moredebug",  help = "Tulosta paljon debuggia").flag(default=false)
-    var tyyppi:String = ""
-    var nro:Int = 0
-    var katu:String = ""
-    var rappu:String = ""
+
+    // Omat muuttujat
     var quaries: MutableList<Query> = mutableListOf<Query>()
 
     // Debug tulostus
@@ -73,6 +74,10 @@ class bafReader : CliktCommand("Postin BAF_VVVVKKPP.dat tiedoston lukija " + VER
         if(tulostaVersio) {
             println ("Version:" + VERSION)
             return 
+        }
+
+        if(eiHeaderia == false) {
+            println("Kysely;Katu suomeksi;Katu ruotsiksi;Postinumero;Kadun numeron alku;Osoitteen loppu;Osoite suomeksi;Osoite ruotsiksi;Postinumeroalueen alku;Postinumeroalueen loppu;Ajopäivä")
         }
 
         readQueryFile(osoiteTiedosto ?: "")
@@ -108,7 +113,7 @@ class bafReader : CliktCommand("Postin BAF_VVVVKKPP.dat tiedoston lukija " + VER
         try {
             var line = reader.readLine()
             while (line != null) {
-                val addressRegex = Regex( "(\\D+)\\s*(\\d+)(?:-\\d+)?\\s*(\\D*)")
+                val addressRegex = Regex( "^(?:^([A-ZÅÄÖ]\\D{2,})\\s(\\d{1,4}))(?:([-–]\\d{1,3}))?(.*)$")
                 val matchResult = addressRegex.matchEntire(line.toString())
                 if( matchResult != null) {
 
@@ -120,10 +125,12 @@ class bafReader : CliktCommand("Postin BAF_VVVVKKPP.dat tiedoston lukija " + VER
                         t = "2"
                     }
 
-                    var q: Query = Query(line,(matchResult.groupValues[1]).trim(), i, (matchResult.groupValues[3]), t, false)                    
+                    var q: Query = Query(line,(matchResult.groupValues[1]).trim(), i, (matchResult.groupValues[3])+(matchResult.groupValues[4]), t, false)                    
                     quaries.add(q)
                 } else {
-                    System.err.println (line.toString() + "; Huono osoite")
+                    if(line != "") {
+                        System.err.println (line.toString() + "; Huono osoite")
+                    }
                 }
                 line = reader.readLine()                    
             }
@@ -140,10 +147,6 @@ class bafReader : CliktCommand("Postin BAF_VVVVKKPP.dat tiedoston lukija " + VER
             for ((title, bytes) in FIELDS) {
                 row[title] = inputStream.readNBytes(bytes).toString(Charsets.ISO_8859_1).trim()
             }
-            debugPrint(
-                "- ${row["Kunnan koodi"]} vs $kunta - ${row["Kadun (paikan) nimi suomeksi"]} | ${row["Kadun (paikan) nimi ruotsiksi"]} vs $katu - " +
-                    "${row["Kiinteistön tyyppi"]} - ${row["Pienin/Kiinteistönumero 1"]} ${row["Suurin/Kiinteistönumero 1"]} vs $nro",
-                    true)
 
             // Oikea kunta?
             if(row["Kunnan koodi"] != kunta) {
@@ -179,13 +182,15 @@ class bafReader : CliktCommand("Postin BAF_VVVVKKPP.dat tiedoston lukija " + VER
                     } else {
                         maxNumber = (row["Suurin/Kiinteistönumero 2"] ?: "0").toInt()
                     }
-                    debugPrint(
-                        "${row["Kadun (paikan) nimi suomeksi"]} $minNumber<=$nro<=$maxNumber postinro:${row["Postinumero"]}",
-                        false
-                    )
 
                     // Osuuko numero?
                     if (q.nro in minNumber..maxNumber) {
+
+                        // Älä tulosta max numeroa, jos sitä ei ole
+                        var l:String = ""
+                        if(maxNumber != Int.MAX_VALUE) {
+                            l = "$maxNumber"
+                        }
 
                         println(
                             "${q.osoite};" +
@@ -196,8 +201,8 @@ class bafReader : CliktCommand("Postin BAF_VVVVKKPP.dat tiedoston lukija " + VER
                             "${q.rappu};" +
                             "${row["Kadun (paikan) nimi suomeksi"]} ${q.nro}${q.rappu};" +
                             "${row["Kadun (paikan) nimi ruotsiksi"]} ${q.nro}${q.rappu};" +
-                            ">=$minNumber;" +
-                            "<=$maxNumber;" +
+                            "$minNumber;" +
+                            l + ";" +
                             "${(row["Ajopäivä"] ?: "").substring(0,4)}" +
                             "-" + "${(row["Ajopäivä"] ?: "").substring(4,6)}" 
                             + "-" + "${(row["Ajopäivä"] ?: "").substring(6,8)}"
@@ -214,5 +219,6 @@ class bafReader : CliktCommand("Postin BAF_VVVVKKPP.dat tiedoston lukija " + VER
         }
     }
 }
+
 
 fun main(args: Array<String>) = bafReader().main(args)
