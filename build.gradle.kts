@@ -4,7 +4,7 @@ plugins {
     id("io.ktor.plugin") version "2.3.10" // Check if it's latest
 }
 
-group = "org.elcheapo"
+group = "org.vppikifi.bafreader"
 version = "0.2"
 
 repositories {
@@ -24,7 +24,7 @@ kotlin {
 }
 
 application {
-    mainClass.set("org.elcheapo.MainKt") // The main class of the application
+    mainClass.set("org.vppikifi.bafreader.MainKt") // The main class of the application
 }
 
 ktor {
