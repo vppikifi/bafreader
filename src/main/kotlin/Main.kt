@@ -143,8 +143,12 @@ class bafReader : CliktCommand("Finnish postal code BAF_VVVVKKPP.dat file reader
                         t = "2"
                     }
 
-                    // Generate query dataclass and add it to the list                                    
-                    var s:String = (matchResult.groupValues[1]).trim()
+                    // Generate query dataclass and add it to the list
+                    // Address comparision is done as case insensitive
+                    // If streetname is longer than 30 characters, we
+                    // truncate before comparision as BAF entry is limited to 
+                    // 30 characters                                    
+                    var s:String = (matchResult.groupValues[1]).trim().uppercase()
                     if(s.length > 30) {
                         s = s.substring(0,30)
                         debugPrint("Truncating too long street name to \"$s\" since BAF entry can not have more than 30 characters", false)
@@ -177,17 +181,17 @@ class bafReader : CliktCommand("Finnish postal code BAF_VVVVKKPP.dat file reader
                 row[title] = inputStream.readNBytes(bytes).toString(Charsets.ISO_8859_1).trim()
             }
 
-            // Incorrrect city?
+            // Incorrect city?
             if(row["Kunnan koodi"] != kunta) continue
 
             // Browse trough all quaries
             val qit = quaries.listIterator()
-            var loytymatta : Boolean = false
+            var quariesLeft : Boolean = false
             for(q in qit) {
 
                 // Performance optiomization: check if at lest one query is still without an answer
                 if(q.found == false) {
-                    loytymatta = true
+                    quariesLeft = true
                 }
                 // 
                 if(
@@ -200,8 +204,8 @@ class bafReader : CliktCommand("Finnish postal code BAF_VVVVKKPP.dat file reader
                 // Case insensitive comparision for both swedish and finnish versions
                 &&  (
                     // Case insensitive comparision for both swedish and finnish versions
-                    q.street.uppercase() == (row["Kadun (paikan) nimi suomeksi"] ?: "").uppercase()
-                    || q.street.uppercase() == (row["Kadun (paikan) nimi ruotsiksi"] ?: "").uppercase()
+                    q.street == (row["Kadun (paikan) nimi suomeksi"] ?: "").uppercase()
+                    || q.street == (row["Kadun (paikan) nimi ruotsiksi"] ?: "").uppercase()
                     )
                 ){                    
                     debugPrint("Street " + q.street + " found", false)
@@ -252,7 +256,7 @@ class bafReader : CliktCommand("Finnish postal code BAF_VVVVKKPP.dat file reader
                 }
             }
             // Stop reading BAF, if all quaries allready have an answer
-            if(loytymatta == false) {
+            if(quariesLeft == false) {
                 return;
             }
         }
