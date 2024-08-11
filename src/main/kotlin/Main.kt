@@ -12,32 +12,58 @@ val VERSION: String = "0.3"
 
 // BAF file format, get exact specification from posti.fi
 data class Field(val name: String, val bytes: Int)
+
+val fieldNameFieldID        : String = "Field id"
+val fieldNameDate           : String = "Date"
+val fieldNamePostalCode     : String = "Postalcode"
+val fieldNamePostOfficeFI   : String = "Name of the postal code FI"
+val fieldNamePostOfficeSE   : String = "Name of the postal code SE"
+val fieldNameAbbreviationFI : String = "Abbreviation of the postal code FI"
+val fieldNameAbbreviationSE : String = "Abbreviation of the postal code SE"
+val fieldNameStreetFI       : String = "Street (place) name FI"
+val fieldNameStreetSE       : String = "Street (place) name SE"
+val fieldNameType           : String = "Type of address"
+val fieldNameSmallNum1      : String = "Smallest housenumber 1"
+val fieldNameSmallDivision1 : String = "Smallest housenumber 1/division letter"
+val fieldNameSmallPunctation: String = "Smallest housenumber/punctation"
+val fieldNameSmallNum2      : String = "Smallest housenumber 2"
+val fieldNameSmallDivision2 : String = "Smallest housenumber 2/division letter"
+val fieldNameHighNum1     : String = "Highest housenumber 1"
+val fieldNameHighDivision1  : String = "Highest housenumber 1/division letter"
+val fieldNameHighPunctation : String = "Highest housenumber/punctation"
+val fieldNameHighNum2       : String = "Highest housenumber 2"
+val fieldNameHighDivision2  : String = "Smallest housenumber 2/division letter"
+val fieldNameCityCode       : String = "City code"
+val fieldNameCityFI         : String = "Name of the city FI"
+val fieldNameCitySE         : String = "Name of the city SE"
+val fieldName : String = ""
+
 val FIELDS = arrayOf(
-    Field("Tietuetunnus", 5),                               
-    Field("Ajopäivä", 8),                                   
-    Field("Postinumero", 5),                                
-    Field("Postinumeron nimi suomeksi",  30),               
-    Field("Postinumeron nimi ruotsiksi", 30),               
-    Field("Postinumeron nimen lyhenne suomeksi", 12),       
-    Field("Postinumeron nimen lyhenne ruotsiksi", 12),      
-    Field("Kadun (paikan) nimi suomeksi", 30),              
-    Field("Kadun (paikan) nimi ruotsiksi", 30),             
-    Field("Tyhjä", 24),                                     
-    Field("Kiinteistön tyyppi", 1),                         
-    Field("Pienin/Kiinteistönumero 1", 5),                  
-    Field("Pienin/Kiinteistön jakokirjain 1", 1),           
-    Field("Pienin/Välimerkki", 1),                          
-    Field("Pienin/Kiinteistönumero 2", 5),                  
-    Field("Pienin/Kiinteistön jakokirjain 2", 1),           
-    Field("Suurin/Kiinteistönumero 1", 5),                  
-    Field("Suurin/Kiinteistön jakokirjain 1", 1),           
-    Field("Suurin/Välimerkki", 1),                          
-    Field("Suurin/Kiinteistönumero 2", 5),                  
-    Field("Suurin/Kiinteistön jakokirjain 2", 1),           
-    Field("Kunnan koodi", 3),                               
-    Field("Kunnan nimi suomeksi", 20),                      
-    Field("Kunnan nimi ruotsiksi", 20),                     
-    Field("rivinvaihto", 1)                                 
+    Field(fieldNameFieldID,                         5), // Starts at position 1
+    Field(fieldNameDate,                            8), // YYYYMMDD, Starts at position 6
+    Field(fieldNamePostalCode,                      5), // Starts at position 14
+    Field(fieldNamePostOfficeFI,                    30),// Starts at position 19
+    Field(fieldNamePostOfficeSE,                    30),// Starts at position 49
+    Field(fieldNameAbbreviationFI,                  12),// Starts at position 79
+    Field(fieldNameAbbreviationSE,                  12),// Starts at position 91
+    Field(fieldNameStreetFI,                        30),// Starts at position 103
+    Field(fieldNameStreetSE,                        30),// Starts at position 133    
+    Field("Empty",                                  24),// Starts at position 163
+    Field(fieldNameType,                            1), // Starts at position 187, 1 = even side, 2 = odd side
+    Field(fieldNameSmallNum1,                       5), // Starts at position 188
+    Field(fieldNameSmallDivision1,                  1), // Starts at position 193, example 12a
+    Field(fieldNameSmallPunctation,                 1), // Starts at position 194, example 30-32
+    Field(fieldNameSmallNum2,                       5), // Starts at position 195, example 30-32
+    Field(fieldNameSmallDivision2,                  1), // Starts at position 200, example 30a-30c   
+    Field(fieldNameHighNum1,                      5), // Starts at position 201, example 72
+    Field(fieldNameHighDivision1,                   1), // Starts at position 206, example 72a
+    Field(fieldNameHighPunctation,                  1), // Starts at position 207, example 72 - 74
+    Field(fieldNameHighNum2,                        5), // Starts at position 208, example 72 - 74   
+    Field(fieldNameHighDivision2,                   1), // Starts at position 213, example 72a - 72c   
+    Field(fieldNameCityCode,                        3), // Starts at position 214   
+    Field(fieldNameCityFI,                          20),// Starts at position 217   
+    Field(fieldNameCitySE,                          20),// Starts at position 237   
+    Field("Linefeed", 1)                                // Starts at position 257   
 )
 
 // Dataclass for quaries
@@ -54,12 +80,11 @@ class bafReader : CliktCommand("Finnish postal code BAF_VVVVKKPP.dat file reader
     val noHeader        by option("-nh", "--no-header",     help = "Don't print CSV header").flag(default=false)
     val moreDebug       by option("-vv", "--moredebug",     help = "Tulosta paljon debuggia").flag(default=false)
 
-    // 
+    // List of quaries
     var quaries: MutableList<Query> = mutableListOf<Query>()
 
-    // Debug tulostus
     fun debugPrint(msg : String, more : Boolean) {
-        // -vv
+        // -vv?
         if(more)  {
             if(moreDebug) {
                 println(msg)
@@ -96,7 +121,7 @@ class bafReader : CliktCommand("Finnish postal code BAF_VVVVKKPP.dat file reader
 
             // Output CSV file header
             if(!noHeader) {
-                println("Query;Street (FI);Street (SE);Postal code (text);Number;End of the address;Address (FI);Address (SE);BAF Entry start;BAF Entry End;Rundate (YYYY-MM-DD)")
+                println("Query;$fieldNameStreetFI;$fieldNameStreetSE;$fieldNamePostalCode;$fieldNamePostOfficeFI;$fieldNamePostOfficeSE;$fieldNameAbbreviationFI;$fieldNameAbbreviationSE;Number;End of the address;Address (FI);Address (SE);BAF Entry start;BAF Entry End;Rundate (YYYY-MM-DD)")
             }
 
             // Walk trough BAF and compare
@@ -111,6 +136,7 @@ class bafReader : CliktCommand("Finnish postal code BAF_VVVVKKPP.dat file reader
             }
         } catch (e : Exception) {
             System.err.println ("Error")
+            debugPrint(e.toString(), false)
         }
     }
 
@@ -129,7 +155,7 @@ class bafReader : CliktCommand("Finnish postal code BAF_VVVVKKPP.dat file reader
                 // - Longest possible street name is 35 letters
                 // - Comination numbers like 1-3 are allowed, 1st number is significant for comparision
                 // - We also capture possible staircase and/or apartment after the number
-                val addressRegex = Regex( "^(?:^([A-ZÅÄÖ]\\D{2,34})\\s(\\d{1,4}))(?:([-–]\\d{1,3}))?(.*)$")
+                val addressRegex = Regex( "^(?:^([A-ZÅÄÖ]\\D{2,34})\\s+(\\d{1,4}))(?:([-–]\\d{1,3}))?(.*)$")
                 val matchResult = addressRegex.matchEntire(line.toString())
                 if( matchResult != null) {
 
@@ -142,9 +168,8 @@ class bafReader : CliktCommand("Finnish postal code BAF_VVVVKKPP.dat file reader
                     } else {
                         t = "2"
                     }
-
                     // Generate query dataclass and add it to the list
-                    // Address comparision is done as case insensitive
+                    // Address comparision is done as case insensitive so store streetname in uppercase
                     // If streetname is longer than 30 characters, we
                     // truncate before comparision as BAF entry is limited to 
                     // 30 characters                                    
@@ -152,8 +177,8 @@ class bafReader : CliktCommand("Finnish postal code BAF_VVVVKKPP.dat file reader
                     if(s.length > 30) {
                         s = s.substring(0,30)
                         debugPrint("Truncating too long street name to \"$s\" since BAF entry can not have more than 30 characters", false)
-                    }
-
+                    }                    
+                    // Generate query dataclass object and add it to the list of quaries
                     var q: Query = Query(line,s, i, (matchResult.groupValues[3])+(matchResult.groupValues[4]), t, false)                    
                     debugPrint(q.toString(), true)
                     quaries.add(q)
@@ -182,7 +207,7 @@ class bafReader : CliktCommand("Finnish postal code BAF_VVVVKKPP.dat file reader
             }
 
             // Incorrect city?
-            if(row["Kunnan koodi"] != kunta) continue
+            if(row["City code"] != kunta) continue
 
             // Browse trough all quaries
             val qit = quaries.listIterator()
@@ -199,60 +224,62 @@ class bafReader : CliktCommand("Finnish postal code BAF_VVVVKKPP.dat file reader
                 q.found == false 
 
                 // Right side of the street?
-                && q.type == row["Kiinteistön tyyppi"]
+                && q.type == row["Type of address",]
 
                 // Case insensitive comparision for both swedish and finnish versions
                 &&  (
                     // Case insensitive comparision for both swedish and finnish versions
-                    q.street == (row["Kadun (paikan) nimi suomeksi"] ?: "").uppercase()
-                    || q.street == (row["Kadun (paikan) nimi ruotsiksi"] ?: "").uppercase()
+                    q.street == (row[fieldNameStreetFI] ?: "").uppercase()
+                    || q.street == (row[fieldNameStreetSE] ?: "").uppercase()
                     )
                 ){                    
                     debugPrint("Street " + q.street + " found", false)
                     // Smallest house number in BAF row
-                    val minNumber = (row["Pienin/Kiinteistönumero 1"] ?: "0").toInt()
+                    val minNumber = (row[fieldNameSmallNum1] ?: "0").toInt()
 
                     // Largest house number in BAF row, use MAX_VALUE is upperlimit does not exist
                     var maxNumber = Int.MAX_VALUE
-                    if ((row["Suurin/Kiinteistönumero 2"] ?: "") == "") {
-                        if ((row["Suurin/Kiinteistönumero 1"] ?: "") != "") {
-                            maxNumber = (row["Suurin/Kiinteistönumero 1"] ?: "0").toInt()
+                    if ((row[fieldNameHighNum2] ?: "") == "") {
+                        if ((row[fieldNameHighNum1] ?: "") != "") {
+                            maxNumber = (row[fieldNameHighNum1] ?: "0").toInt()
                         }
                     } else {
-                        maxNumber = (row["Suurin/Kiinteistönumero 2"] ?: "0").toInt()
+                        maxNumber = (row[fieldNameHighNum2] ?: "0").toInt()
                     }
 
                     // Is our address in range of thsi BAF row?
                     if (q.number in minNumber..maxNumber) {
-
                         debugPrint("Match: ${q.number} is between $minNumber and $maxNumber", false)
                         // Don't print range max, if it did not exist in BAF
                         var l:String = ""
                         if(maxNumber != Int.MAX_VALUE) {
                             l = "$maxNumber"
                         }
-
                         println(
                             "${q.query};" +
-                            "${row["Kadun (paikan) nimi suomeksi"]};" +
-                            "${row["Kadun (paikan) nimi ruotsiksi"]};" +
-                            "${row["Postinumero"]};" +
+                            "${row[fieldNameStreetFI]};" +
+                            "${row[fieldNameStreetSE]};" +
+                            "${row[fieldNamePostalCode]};" +
+                            "${row[fieldNamePostOfficeFI]};" +
+                            "${row[fieldNamePostOfficeSE]};" +
+                            "${row[fieldNameAbbreviationFI]};" +
+                            "${row[fieldNameAbbreviationSE]};" +
                             "${q.number};" +
                             "${q.staircase};" +
-                            "${row["Kadun (paikan) nimi suomeksi"]} ${q.number}${q.staircase};" +
-                            "${row["Kadun (paikan) nimi ruotsiksi"]} ${q.number}${q.staircase};" +
+                            "${row[fieldNameStreetFI]} ${q.number}${q.staircase};" +
+                            "${row[fieldNameStreetSE]} ${q.number}${q.staircase};" +
                             "$minNumber;" +
                             l + ";" +
-                            "${(row["Ajopäivä"] ?: "").substring(0,4)}" +
-                            "-" + "${(row["Ajopäivä"] ?: "").substring(4,6)}" 
-                            + "-" + "${(row["Ajopäivä"] ?: "").substring(6,8)}"
+                            // Date is in YYYYMMDD format, lets convert to YYYY-MM-DD
+                            "${(row[fieldNameDate] ?: "").substring(0,4)}" +       // YYYY
+                            "-" + "${(row[fieldNameDate] ?: "").substring(4,6)}"   // MM
+                            + "-" + "${(row[fieldNameDate] ?: "").substring(6,8)}" // DD
                         )
                         q.found = true
                     }
                     else {
                         debugPrint("${q.number} is not between $minNumber and $maxNumber", false)
                     } 
-        
                 }
             }
             // Stop reading BAF, if all quaries allready have an answer
@@ -262,6 +289,5 @@ class bafReader : CliktCommand("Finnish postal code BAF_VVVVKKPP.dat file reader
         }
     }
 }
-
 
 fun main(args: Array<String>) = bafReader().main(args)
