@@ -6,7 +6,7 @@ It can also be used to convert between Finnish and Swedish variants of the addre
 Input: latest BAF-file from https://www.posti.fi/webpcode
      + Tekstifile for quaries
 
-Output: CSV
+Output: **CSV**
 
 I am not associated with Posti in any way. I just wanted to try to do something usefull with Kotlin. 
 
@@ -16,7 +16,7 @@ I am not associated with Posti in any way. I just wanted to try to do something 
 3) Check if any of the quaries match
 4) Read next lines until all quaries have an answer or the BAF-file ends
 
-Building the program: 
+## Building the program: 
 ./gradlew buildFatJar
 
 ## Example usage: 
