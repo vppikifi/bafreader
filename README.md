@@ -3,7 +3,7 @@
 Program for querying postalcodes and checking validity of addresses in Finland. 
 It can also be used to convert between Finnish and Swedish variants of the addresses.
 
-Input: latest BAF-file from https://www.posti.fi/webpcode
+Input: latest **BAF**-file from https://www.posti.fi/webpcode
      + Tekstifile for quaries
 
 Output: **CSV**
