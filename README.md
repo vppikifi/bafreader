@@ -8,7 +8,9 @@ Input: latest **BAF**-file from https://www.posti.fi/webpcode
 
 Output: **CSV**
 
-I am not associated with Posti in any way. I just wanted to try to do something usefull with Kotlin. 
+Read also Service description from https://www.posti.fi/en/customer-support/postal-code-services
+
+I am not associated with Posti in any way. I just wanted to try to do something with Kotlin. 
 
 ## Algorithm: 
 1) Read queries into memory
@@ -57,4 +59,5 @@ java -jar build/libs/bafreader.jar --baf=BAF_20240803.dat --input=samplequery.tx
 | Solviksallén                                                                             4|Aurinkolahden puistotie|Solviksallén|00990|HELSINKI|HELSINGFORS|HKI|HFORS|4||Aurinkolahden puistotie 4|Solviksallén 4|2|12|2024-08-03|
 
 ### STDERR:
-Mannerheimvägen 119;  Unknown address
+Mannerheimvägen 119;  Unknown address  
+\-\> This is bacause there is no house number 119 in Mannerheimintie.
