@@ -1,6 +1,6 @@
-BAFREADER v.0.3
+# BAFREADER v.0.3
 
-Program for querying postalcodes of addresses in Finland. 
+Program for querying postalcodes and checking validity of addresses in Finland. 
 It can also be used to convert between Finnish and Swedish variants of the addresses.
 
 Input: latest BAF-file from https://www.posti.fi/webpcode
@@ -10,7 +10,7 @@ Output: CSV
 
 I am not associated with Posti in any way. I just wanted to try to do something usefull with Kotlin. 
 
-Algorithm: 
+## Algorithm: 
 1) Read queries into memory
 2) Read a line from BAF-file
 3) Check if any of the quaries match
@@ -19,11 +19,11 @@ Algorithm:
 Building the program: 
 ./gradlew buildFatJar
 
-Example usage: 
+## Example usage: 
 
 java -jar build/libs/bafreader.jar --baf=BAF_20240803.dat --input=samplequery.txt 
 
-STDOUT:
+### STDOUT:
 
 | Query | Streetname (FI) | Streetname (SE) | Postalcode | Name of the postal code (FI)|Name of the postal code (SE)|Abbreviation of the postal code (FI)|Abbreviation of the postal code (FI)|Number|End of the address|Address FI|Address SE|BAF entry start|BAF entry start|Run date (YYYY-MM-DD)|
 |:------------|:------------|:------------|:------------|:------------|:------------|:------------|:------------|:------------|:------------|:------------|:------------|:------------|:------------|:------------|
@@ -44,5 +44,5 @@ STDOUT:
 | Poiju 3|Poiju|Bojen|00890|HELSINKI|HELSINGFORS|HKI|HFORS|3||Poiju 3|Bojen 3|3||2024-08-03
 | Solviksallén                                                                             4|Aurinkolahden puistotie|Solviksallén|00990|HELSINKI|HELSINGFORS|HKI|HFORS|4||Aurinkolahden puistotie 4|Solviksallén 4|2|12|2024-08-03|
 
-STDERR:
+### STDERR:
 Mannerheimvägen 119;  Unknown address
