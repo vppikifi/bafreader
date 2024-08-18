@@ -22,8 +22,8 @@ I am not associated with Posti in any way. I just wanted to try to do something 
 ## Command line switches
 | Switch (short)| Switch (long) | Mandatory |Description |
 |:-------|:-------|:-------|:-------|
-|-b | --baf=<text> | Yes | BAF-File |
-
+|-b | --baf\=\<text\> | Yes | BAF-File |
+| 
 
 ## Example usage: 
 
