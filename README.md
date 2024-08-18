@@ -27,22 +27,22 @@ STDOUT:
 
 | Query | Streetname (FI) | Streetname (SE) | Postalcode | Name of the postal code (FI)|Name of the postal code (SE)|Abbreviation of the postal code (FI)|Abbreviation of the postal code (FI)|Number|End of the address|Address FI|Address SE|BAF entry start|BAF entry start|Run date (YYYY-MM-DD)|
 |:------------|:------------|:------------|:------------|:------------|:------------|:------------|:------------|:------------|:------------|:------------|:------------|:------------|:------------|:------------|
-| Mannerheimintie 1|Mannerheimintie|Mannerheimvägen|00100|HELSINKI|HELSINKI|HKI|HKI|1||Mannerheimintie 1|Mannerheimvägen 1|1|13|2024-08-03|
-| Mannerheimintie 2a|Mannerheimintie|Mannerheimvägen|00100|HELSINKI|HELSINKI|HKI|HKI|2|a|Mannerheimintie 2a|Mannerheimvägen 2a|2|40|2024-08-03|
-| Mannerheimintie 17|Mannerheimintie|Mannerheimvägen|00250|HELSINKI|HELSINKI|HKI|HKI|17||Mannerheimintie 17|Mannerheimvägen 17|17|69|2024-08-03|
-| Mannerheimintie 69|Mannerheimintie|Mannerheimvägen|00250|HELSINKI|HELSINKI|HKI|HKI|69||Mannerheimintie 69|Mannerheimvägen 69|17|69|2024-08-03|
-| Mannerheimvägen 70|Mannerheimintie|Mannerheimvägen|00250|HELSINKI|HELSINKI|HKI|HKI|70||Mannerheimintie 70|Mannerheimvägen 70|70|114|2024-08-03|
-| Mannerheimvägen 42|Mannerheimintie|Mannerheimvägen|00260|HELSINKI|HELSINKI|HKI|HKI|42||Mannerheimintie 42|Mannerheimvägen 42|42|68|2024-08-03|
-| Mannerheimvägen 71|Mannerheimintie|Mannerheimvägen|00270|HELSINKI|HELSINKI|HKI|HKI|71||Mannerheimintie 71|Mannerheimvägen 71|71|95|2024-08-03|
-| Mannerheimintie 95|Mannerheimintie|Mannerheimvägen|00270|HELSINKI|HELSINKI|HKI|HKI|95||Mannerheimintie 95|Mannerheimvägen 95|71|95|2024-08-03|
-| Mannerheimvägen 116|Mannerheimintie|Mannerheimvägen|00270|HELSINKI|HELSINKI|HKI|HKI|116||Mannerheimintie 116|Mannerheimvägen 116|116|158|2024-08-03|
-| Mannerheimintie 97|Mannerheimintie|Mannerheimvägen|00280|HELSINKI|HELSINKI|HKI|HKI|97||Mannerheimintie 97|Mannerheimvägen 97|97|117|2024-08-03|
-| Mannerheimvägen 160|Mannerheimintie|Mannerheimvägen|00300|HELSINKI|HELSINKI|HKI|HKI|160||Mannerheimintie 160|Mannerheimvägen 160|160|172|2024-08-03|
-| A.I. Virtasen aukio 1|A.I. Virtasen aukio|A.I. Virtanens plats|00560|HELSINKI|HELSINKI|HKI|HKI|1||A.I. Virtasen aukio 1|A.I. Virtanens plats 1|1||2024-08-03|
-| Jan-Magnus Janssonin aukio 2|Jan-Magnus Janssonin aukio|Jan-Magnus Janssons plats|00560|HELSINKI|HELSINKI|HKI|HKI|2||Jan-Magnus Janssonin aukio 2|Jan-Magnus Janssons plats 2|2|6|2024-08-03|
-| Klaukkalanpuiston ryhmäpuutarha     113|Klaukkalanpuiston ryhmäpuutarh|Klasasparken grupp trädgård|00680|HELSINKI|HELSINKI|HKI|HKI|113||Klaukkalanpuiston ryhmäpuutarh 113|Klasasparken grupp trädgård 113|1|113| 2024-08-03|
-| Poiju 3|Poiju|Bojen|00890|HELSINKI|HELSINKI|HKI|HKI|3||Poiju 3|Bojen 3|3||2024-08-03
-| Solviksallén                                                                             4|Aurinkolahden puistotie|Solviksallén|00990|HELSINKI|HELSINKI|HKI|HKI|4||Aurinkolahden puistotie 4|Solviksallén 4|2|12|2024-08-03|
+| Mannerheimintie 1|Mannerheimintie|Mannerheimvägen|00100|HELSINKI|HELSINGFORS|HKI|HFORS|1||Mannerheimintie 1|Mannerheimvägen 1|1|13|2024-08-03|
+| Mannerheimintie 2a|Mannerheimintie|Mannerheimvägen|00100|HELSINKI|HELSINGFORS|HKI|HFORS|2|a|Mannerheimintie 2a|Mannerheimvägen 2a|2|40|2024-08-03|
+| Mannerheimintie 17|Mannerheimintie|Mannerheimvägen|00250|HELSINKI|HELSINGFORS|HKI|HFORS|17||Mannerheimintie 17|Mannerheimvägen 17|17|69|2024-08-03|
+| Mannerheimintie 69|Mannerheimintie|Mannerheimvägen|00250|HELSINKI|HELSINGFORS|HKI|HFORS|69||Mannerheimintie 69|Mannerheimvägen 69|17|69|2024-08-03|
+| Mannerheimvägen 70|Mannerheimintie|Mannerheimvägen|00250|HELSINKI|HELSINGFORS|HKI|HFORS|70||Mannerheimintie 70|Mannerheimvägen 70|70|114|2024-08-03|
+| Mannerheimvägen 42|Mannerheimintie|Mannerheimvägen|00260|HELSINKI|HELSINGFORS|HKI|HFORS|42||Mannerheimintie 42|Mannerheimvägen 42|42|68|2024-08-03|
+| Mannerheimvägen 71|Mannerheimintie|Mannerheimvägen|00270|HELSINKI|HELSINGFORS|HKI|HFORS|71||Mannerheimintie 71|Mannerheimvägen 71|71|95|2024-08-03|
+| Mannerheimintie 95|Mannerheimintie|Mannerheimvägen|00270|HELSINKI|HELSINGFORS|HKI|HFORS|95||Mannerheimintie 95|Mannerheimvägen 95|71|95|2024-08-03|
+| Mannerheimvägen 116|Mannerheimintie|Mannerheimvägen|00270|HELSINKI|HELSINGFORS|HKI|HFORS|116||Mannerheimintie 116|Mannerheimvägen 116|116|158|2024-08-03|
+| Mannerheimintie 97|Mannerheimintie|Mannerheimvägen|00280|HELSINKI|HELSINGFORS|HKI|HFORS|97||Mannerheimintie 97|Mannerheimvägen 97|97|117|2024-08-03|
+| Mannerheimvägen 160|Mannerheimintie|Mannerheimvägen|00300|HELSINKI|HELSINGFORS|HKI|HFORS|160||Mannerheimintie 160|Mannerheimvägen 160|160|172|2024-08-03|
+| A.I. Virtasen aukio 1|A.I. Virtasen aukio|A.I. Virtanens plats|00560|HELSINKI|HELSINGFORS|HKI|HFORS|1||A.I. Virtasen aukio 1|A.I. Virtanens plats 1|1||2024-08-03|
+| Jan-Magnus Janssonin aukio 2|Jan-Magnus Janssonin aukio|Jan-Magnus Janssons plats|00560|HELSINKI|HELSINGFORS|HKI|HFORS|2||Jan-Magnus Janssonin aukio 2|Jan-Magnus Janssons plats 2|2|6|2024-08-03|
+| Klaukkalanpuiston ryhmäpuutarha     113|Klaukkalanpuiston ryhmäpuutarh|Klasasparken grupp trädgård|00680|HELSINKI|HELSINGFORS|HKI|HFORS|113||Klaukkalanpuiston ryhmäpuutarh 113|Klasasparken grupp trädgård 113|1|113| 2024-08-03|
+| Poiju 3|Poiju|Bojen|00890|HELSINKI|HELSINGFORS|HKI|HFORS|3||Poiju 3|Bojen 3|3||2024-08-03
+| Solviksallén                                                                             4|Aurinkolahden puistotie|Solviksallén|00990|HELSINKI|HELSINGFORS|HKI|HFORS|4||Aurinkolahden puistotie 4|Solviksallén 4|2|12|2024-08-03|
 
 STDERR:
 Mannerheimvägen 119;  Unknown address
