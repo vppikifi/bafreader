@@ -292,9 +292,9 @@ class bafReader : CliktCommand("Finnish postal code BAF_VVVVKKPP.dat file reader
                             "${row[FieldNames.STREETNAME_SE.ordinal]};" +
                             "${row[FieldNames.POSTALCODE.ordinal]};" +
                             "${row[FieldNames.POSTALCODE_NAME_FI.ordinal]};" +
-                            "${row[FieldNames.POSTALCODE_NAME_FI.ordinal]};" +
+                            "${row[FieldNames.POSTALCODE_NAME_SE.ordinal]};" +
                             "${row[FieldNames.POSTALCODE_ABRR_FI.ordinal]};" +
-                            "${row[FieldNames.POSTALCODE_ABRR_FI.ordinal]};" +
+                            "${row[FieldNames.POSTALCODE_ABRR_SE.ordinal]};" +
                             "${q.number};" +
                             "${q.staircase};" +
                             "${row[FieldNames.STREETNAME_FI.ordinal]} ${q.number}${q.staircase};" +
