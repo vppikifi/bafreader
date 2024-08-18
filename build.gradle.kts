@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "org.vppikifi.bafreader"
-version = "0.2"
+version = "0.3"
 
 repositories {
     mavenCentral()

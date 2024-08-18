@@ -1,4 +1,4 @@
-BAFREADER v.0.1
+BAFREADER v.0.3
 
 Program for querying postalcodes of addresses in Finland. 
 It can also be used to convert between Finnish and Swedish variants of the addresses.
@@ -22,5 +22,6 @@ Building the program:
 Example usage: 
 
 java -jar build/libs/bafreader.jar --baf=BAF_20240803.dat --input=samplequery.txt 
--> stdout: <results in CSV>
--> stderr: <Invalid addresses>
+
+stdout: gets successfull results in CSV format
+stderr: gets invalid addresses 
