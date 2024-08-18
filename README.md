@@ -26,7 +26,7 @@ java -jar build/libs/bafreader.jar --baf=BAF_20240803.dat --input=samplequery.tx
 STDOUT:
 
 | Query | Streetname (FI) | Streetname (SE) | Postalcode | Name of the postal code (FI)|Name of the postal code (SE)|Abbreviation of the postal code (FI)|Abbreviation of the postal code (FI)|Number|End of the address|Address FI|Address SE|BAF entry start|BAF entry start|Run date (YYYY-MM-DD)|
-|:------------|:------------|:------------|:------------|:------------|:------------|:------------|:------------|:------------|:------------|:------------|:------------|:------------|:------------|
+|:------------|:------------|:------------|:------------|:------------|:------------|:------------|:------------|:------------|:------------|:------------|:------------|:------------|:------------|:------------|
 | Mannerheimintie 1|Mannerheimintie|Mannerheimvägen|00100|HELSINKI|HELSINKI|HKI|HKI|1||Mannerheimintie 1|Mannerheimvägen 1|1|13|2024-08-03|
 | Mannerheimintie 2a|Mannerheimintie|Mannerheimvägen|00100|HELSINKI|HELSINKI|HKI|HKI|2|a|Mannerheimintie 2a|Mannerheimvägen 2a|2|40|2024-08-03|
 | Mannerheimintie 17|Mannerheimintie|Mannerheimvägen|00250|HELSINKI|HELSINKI|HKI|HKI|17||Mannerheimintie 17|Mannerheimvägen 17|17|69|2024-08-03|
