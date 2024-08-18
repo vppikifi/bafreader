@@ -12,7 +12,7 @@ I am not associated with Posti in any way. I just wanted to try to do something 
 
 Algorithm: 
 1) Read queries into memory
-2) Read a line from BAF file
+2) Read a line from BAF-file
 3) Check if any of the quaries match
 4) Read next lines until all quaries have an answer or the BAF-file ends
 
