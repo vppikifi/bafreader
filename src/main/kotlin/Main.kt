@@ -28,7 +28,7 @@ val fieldNameSmallDivision1 : String = "Smallest housenumber 1/division letter"
 val fieldNameSmallPunctation: String = "Smallest housenumber/punctation"
 val fieldNameSmallNum2      : String = "Smallest housenumber 2"
 val fieldNameSmallDivision2 : String = "Smallest housenumber 2/division letter"
-val fieldNameHighNum1     : String = "Highest housenumber 1"
+val fieldNameHighNum1       : String = "Highest housenumber 1"
 val fieldNameHighDivision1  : String = "Highest housenumber 1/division letter"
 val fieldNameHighPunctation : String = "Highest housenumber/punctation"
 val fieldNameHighNum2       : String = "Highest housenumber 2"
@@ -55,7 +55,7 @@ val FIELDS = arrayOf(
     Field(fieldNameSmallPunctation,                 1), // Starts at position 194, example 30-32
     Field(fieldNameSmallNum2,                       5), // Starts at position 195, example 30-32
     Field(fieldNameSmallDivision2,                  1), // Starts at position 200, example 30a-30c   
-    Field(fieldNameHighNum1,                      5), // Starts at position 201, example 72
+    Field(fieldNameHighNum1,                        5), // Starts at position 201, example 72
     Field(fieldNameHighDivision1,                   1), // Starts at position 206, example 72a
     Field(fieldNameHighPunctation,                  1), // Starts at position 207, example 72 - 74
     Field(fieldNameHighNum2,                        5), // Starts at position 208, example 72 - 74   
@@ -72,13 +72,14 @@ data class Query(val query:String, val street:String, val number: Int, val stair
 class bafReader : CliktCommand("Finnish postal code BAF_VVVVKKPP.dat file reader " + VERSION) {
 
     // Commandline parameters 
-    val bafTiedosto     by option("-b",  "--baf",           help = "BAF file")
-    val osoiteTiedosto  by option("-i",  "--input",         help = "query file")
-    val kunta           by option("-c",  "--kunta",         help = "City code, default is 091 (Helsinki)").default("091")
-    val printVersion    by option("--version",              help = "Print version").flag(default=false)
-    val debug           by option("-v",  "--debug",         help = "Tulosta debug").flag(default=false)
-    val noHeader        by option("-nh", "--no-header",     help = "Don't print CSV header").flag(default=false)
-    val moreDebug       by option("-vv", "--moredebug",     help = "Tulosta paljon debuggia").flag(default=false)
+    val bafFile         by option("-b",     "--baf",           help = "BAF file")
+    val queryFile       by option("-i",     "--input",         help = "query file")
+    val city            by option("-c",     "--city",          help = "City code, default is 091 (Helsinki)").default("091")
+    val printVersion    by option("--version",                 help = "Print version").flag(default=false)
+    val debug           by option("-v",     "--debug",         help = "Print debug").flag(default=false)
+    val moreDebug       by option("-vv",    "--moredebug",     help = "More debug").flag(default=false)
+    val noHeader        by option("-nh",    "--no-header",     help = "Don't print CSV header").flag(default=false)
+    
 
     // List of quaries
     var quaries: MutableList<Query> = mutableListOf<Query>()
@@ -102,22 +103,22 @@ class bafReader : CliktCommand("Finnish postal code BAF_VVVVKKPP.dat file reader
             return 
         }
 
-        if(bafTiedosto == null || osoiteTiedosto == null) {
+        if(bafFile == null || queryFile == null) {
             System.err.println("Error: Input file(s) missing")
             return
         }
 
         // Read query file into quaries structure
-        if(!readQueryFile(osoiteTiedosto ?: "")) return
+        if(!readQueryFile(queryFile ?: "")) return
     
         // Read BAF file
         try {
 
             // Open
-            debugPrint("Opening :" + bafTiedosto.toString(), false)
+            debugPrint("Opening :" + bafFile.toString(), false)
             var inputStream: BufferedInputStream
-            inputStream = BufferedInputStream(File (bafTiedosto).inputStream())
-            debugPrint(bafTiedosto + " contains " + inputStream.available() + " tavua",false)
+            inputStream = BufferedInputStream(File (bafFile).inputStream())
+            debugPrint(bafFile + " contains " + inputStream.available() + " tavua",false)
 
             // Output CSV file header
             if(!noHeader) {
@@ -207,7 +208,10 @@ class bafReader : CliktCommand("Finnish postal code BAF_VVVVKKPP.dat file reader
             }
 
             // Incorrect city?
-            if(row["City code"] != kunta) continue
+            if(row["City code"] != city) {
+                debugPrint("Skipping incorrect city" + row["City code"], true)
+                continue
+            } 
 
             // Browse trough all quaries
             val qit = quaries.listIterator()
@@ -219,14 +223,8 @@ class bafReader : CliktCommand("Finnish postal code BAF_VVVVKKPP.dat file reader
                     quariesLeft = true
                 }
                 // 
-                if(
-                // Already found?    
-                q.found == false 
-
-                // Right side of the street?
-                && q.type == row["Type of address",]
-
-                // Case insensitive comparision for both swedish and finnish versions
+                if( q.found == false // Allready found
+                && q.type == row[fieldNameType] // Right side of the street
                 &&  (
                     // Case insensitive comparision for both swedish and finnish versions
                     q.street == (row[fieldNameStreetFI] ?: "").uppercase()
@@ -280,6 +278,8 @@ class bafReader : CliktCommand("Finnish postal code BAF_VVVVKKPP.dat file reader
                     else {
                         debugPrint("${q.number} is not between $minNumber and $maxNumber", false)
                     } 
+                } else {
+                    debugPrint("No match: ${row[fieldNameStreetFI]}/${row[fieldNameStreetSE]}/${row[fieldNameType]}/${q.found}",true)
                 }
             }
             // Stop reading BAF, if all quaries allready have an answer
