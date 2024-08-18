@@ -19,11 +19,17 @@ I am not associated with Posti in any way. I just wanted to try to do something 
 ## Building the program: 
 ./gradlew buildFatJar
 
+## Command line switches
+| Switch (short)| Switch (long) | Mandatory |Description |
+|:-------|:-------|:-------|:-------|
+|-b | --baf=<text> | Yes | BAF-File |
+
+
 ## Example usage: 
 
 java -jar build/libs/bafreader.jar --baf=BAF_20240803.dat --input=samplequery.txt 
 
-### STDOUT:
+### STDOUT (Semicolon separated CSV):
 
 | Query | Streetname (FI) | Streetname (SE) | Postalcode | Name of the postal code (FI)|Name of the postal code (SE)|Abbreviation of the postal code (FI)|Abbreviation of the postal code (FI)|Number|End of the address|Address FI|Address SE|BAF entry start|BAF entry start|Run date (YYYY-MM-DD)|
 |:------------|:------------|:------------|:------------|:------------|:------------|:------------|:------------|:------------|:------------|:------------|:------------|:------------|:------------|:------------|
