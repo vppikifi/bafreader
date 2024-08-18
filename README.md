@@ -23,7 +23,13 @@ I am not associated with Posti in any way. I just wanted to try to do something 
 | Switch (short)| Switch (long) | Mandatory |Description |
 |:-------|:-------|:-------|:-------|
 |-b | --baf\=\<text\> | Yes | BAF-File |
-| 
+| -i | --input\=\<text\> | Yes | Query file |
+| -c | --city\=\<text\> | No | Code of the city, default 091 (Helsinki) |
+| -nh | --no-header | no | Don't print CSV-file header | 
+| | --version | no | Print version number |
+| -v | --debug | no | Print debug info | 
+| -vv | --moredebug | no | Print all debug info (a lot) |
+| -h | --help | no | Print help |
 
 ## Example usage: 
 
