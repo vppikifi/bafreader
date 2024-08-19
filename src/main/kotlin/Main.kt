@@ -7,8 +7,7 @@ import com.github.ajalt.clikt.parameters.options.*
 import java.io.BufferedInputStream
 import java.io.BufferedReader
 import kotlin.text.toUpperCase
-import org.vppikifi.bafreader.FieldNames
-import org.vppikifi.bafreader.FIELDS
+import kotlin.io.readln
 
 val VERSION: String = "0.3"
 
@@ -88,16 +87,14 @@ class bafReader : CliktCommand("Finnish postal code BAF_VVVVKKPP.dat file reader
 + "\u0085\u0085Example usage:"
 + "\u0085java -jar bafreader.jar --baf=BAF_20240803.dat --input=samplequery.txt"
 ) {
-
     // Commandline parameters 
-    val bafFile         by option("-b",     "--baf",           help = "BAF-file (get yours from https://www.posti.fi/webpcode)")
-    val queryFile       by option("-i",     "--input",         help = "Query file")
+    val bafFile         by option("-b",     "--baf",           help = "BAF-file, mandatory (get yours from https://www.posti.fi/webpcode)").required()
+    val queryFile       by option("-i",     "--input",         help = "Query file, leave empty for stdin")
     val city            by option("-c",     "--city",          help = "City code, default is 091 (Helsinki)").default("091")
     val printVersion    by option("--version",                 help = "Print version").flag(default=false)
     val debug           by option("-v",     "--debug",         help = "Print debug").flag(default=false)
     val moreDebug       by option("-vv",    "--moredebug",     help = "More debug").flag(default=false)
     val noHeader        by option("-nh",    "--no-header",     help = "Don't print CSV header").flag(default=false)
-    
 
     // List of quaries
     var quaries: MutableList<Query> = mutableListOf<Query>()
@@ -116,23 +113,17 @@ class bafReader : CliktCommand("Finnish postal code BAF_VVVVKKPP.dat file reader
     // Main
     override fun run() {
 
+        // --version just prints version number and exists
         if(printVersion) {
-            println ("Version:" + VERSION)
+            println ("bafreader:" + VERSION)
             return 
         }
 
-        if(bafFile == null || queryFile == null) {
-            System.err.println("Error: Input file(s) missing. Use --help to get help")
-            return
-        }
-
         // Read query file into quaries structure
-        if(!readQueryFile(queryFile ?: "")) return
+        if(!readQueryFile(queryFile)) return
     
         // Read BAF file
         try {
-
-            // Open
             debugPrint("Opening :" + bafFile.toString())
             var inputStream: BufferedInputStream
             inputStream = BufferedInputStream(File (bafFile).inputStream())
@@ -174,15 +165,30 @@ class bafReader : CliktCommand("Finnish postal code BAF_VVVVKKPP.dat file reader
         }
     }
 
-    fun readQueryFile(qf: String) : Boolean{
+    // Read from file or from stdin
+    fun getLine(qf: String?, reader: BufferedReader?) : String? {
+        if(qf != null) {
+            if(reader != null) {
+                return reader.readLine()
+            }                        
+            return null 
+        }
+        return readLine()
+    }
+
+    fun readQueryFile(qf: String?) : Boolean{
         var ret: Boolean = true
-        var reader: BufferedReader
+        var reader: BufferedReader? = null
+        var line: String?
         try {
             debugPrint("Opening :" + qf)
-            reader = BufferedReader(File (qf).inputStream().reader())
-            var line = reader.readLine()
-            while (line != null) {
+            if(qf != null && qf != "-") {
+                reader = BufferedReader(File (qf).inputStream().reader())
+            }
 
+            // Get lines from file or stdin
+            line = getLine(qf, reader)
+            while (line != null) {
                 // Parse Street address:
                 // - Name starts with capital letter
                 // - Shortest possible street is 3 letters
@@ -214,14 +220,14 @@ class bafReader : CliktCommand("Finnish postal code BAF_VVVVKKPP.dat file reader
                     }                    
                     // Generate query dataclass object and add it to the list of quaries
                     var q: Query = Query(line,s, i, (matchResult.groupValues[3])+(matchResult.groupValues[4]), t, false)                    
-                    debugPrint(q.toString(), true)
+                    debugPrint(q.toString())
                     quaries.add(q)
                 } else {
                     if(line != "") {
                         System.err.println (line.toString() + "; Illegal address")
                     }
-                }
-                line = reader.readLine()                    
+                }                
+                line = getLine(qf, reader)
             }
         } catch (e : Exception) {
             System.err.println (e.toString())
