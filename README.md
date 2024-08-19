@@ -1,4 +1,4 @@
-# BAFREADER v.0.3
+# BAFREADER v.0.4
 
 Program for querying postalcodes and checking validity of addresses in Finland. 
 It can also be used to convert between Finnish and Swedish variants of the addresses.
@@ -25,7 +25,7 @@ I am not associated with Posti in any way. I just wanted to try to do something 
 | Switch (short)| Switch (long) | Mandatory |Description |
 |:-------|:-------|:-------|:-------|
 |-b | --baf\=\<text\> | Yes | BAF-File |
-| -i | --input\=\<text\> | Yes | Query file |
+| -i | --input\=\<text\> | Yes | Query file, default is stdin |
 | -c | --city\=\<text\> | No | Code of the city, default 091 (Helsinki) |
 | -nh | --no-header | no | Don't print CSV-file header | 
 | | --version | no | Print version number |

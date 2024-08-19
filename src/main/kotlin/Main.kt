@@ -9,7 +9,7 @@ import java.io.BufferedReader
 import kotlin.text.toUpperCase
 import kotlin.io.readln
 
-val VERSION: String = "0.3"
+val VERSION: String = "0.4"
 
 enum class FieldNames (val printableName: String){
     ID("Record id"),               
